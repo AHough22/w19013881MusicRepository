@@ -104,5 +104,6 @@ options = trainingOptions('adam', ...
 %Plot model structure
 figure
 analyzeNetwork(lgraph);
+%%
 
-net = trainNetwork(sdsTrain, lgraph, options);
+net = trainNetwork(sds, lgraph, options);

@@ -1,5 +1,3 @@
-% (timeRange x i x Channel) | Data Import and Preprocessing Step
-% pseudoCode, runs model on a single wav file:
 timeRange = 88201;
 inputChannels = 7;
 
@@ -41,8 +39,4 @@ for i = 1:numberOfSongs
         trackLength = max(cellfun(@numel,instrumentCell));
         newInstrumentCell = cellfun(@(x) [x; zeros(trackLength - numel(x),1)], instrumentCell, 'un',0);
         save(append(pwd,'/preprocessedMatlabDataset/', songName, '.mat'),"newInstrumentCell","-v7.3");
-
-        %for l = 1:size(inputData,2)
-        %inputCell{l} = squeeze(inputData(:,i,:));
-        %end
 end
