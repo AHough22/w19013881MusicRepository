@@ -1,15 +1,17 @@
 
+dataPreprocessingScript
+%% 
+datastoreScript
+%%
+
 %Variables
-timeRange = 96001;
+timeRange = 88201;
 keyRange = 13;
 timeScale = keyRange/timeRange;
 window = 2;
-inputChannels = 4;
-intermediateChannels = 3;
-embeddingChannels = 2;
-
-dataPreprocessingScript.m;
-
+inputChannels = 7;
+intermediateChannels = 6;
+embeddingChannels = 5;
 
 %initialise architecture
 
@@ -41,7 +43,9 @@ for i = 1:embeddingChannels
         atan2Layer(['atan2Layer',num2str(i)])
         ];
 
-    fftLayerCell{i} = fftLayer(['fftLayer',num2str(i)],timeRange,timeScale,window);
+    fftLayerCell{i} = [
+                      fftLayer(['fftLayer',num2str(i)],timeRange,timeScale,window)
+                      ];
     phaseEmbeddingLayerCell{i} = [  phaseEmbeddingLayer(['phaseEmbedding',num2str(i)],timeRange,timeScale,window);  
         ];
 end
@@ -81,7 +85,7 @@ for i = 1:embeddingChannels
     lgraph = connectLayers(lgraph, ['phaseChannelFilter',num2str(i)],['fftLayer',num2str(i)]);
     lgraph = connectLayers(lgraph, ['atan2Layer',num2str(i)],['phaseEmbedding',num2str(i),'/in1']);
     lgraph = connectLayers(lgraph, ['fftLayer',num2str(i)],['phaseEmbedding',num2str(i),'/in2']);
-    lgraph = connectLayers(lgraph, ['phaseEmbeddingOutput',num2str(i)],['convolutionalDecoderInput/in',num2str(i)]);
+    lgraph = connectLayers(lgraph, ['phaseEmbedding',num2str(i)],['convolutionalDecoderInput/in',num2str(i)]);
 end
 lgraph = connectLayers(lgraph,'convolutionalDecoderOutput','outputLayer');
 
@@ -89,7 +93,7 @@ lgraph = connectLayers(lgraph,'convolutionalDecoderOutput','outputLayer');
 options = trainingOptions('adam', ...
                           'InitialLearnRate',1e-4, ...
                           'MaxEpochs',30, ...
-                          'MiniBatchSize', 32, ...
+                          'MiniBatchSize', 1, ...
                           'L2Regularization',1e-4, ...
                           'Verbose', false, ...
                           'Plots','training-progress', ...
@@ -98,11 +102,7 @@ options = trainingOptions('adam', ...
 
 
 %Plot model structure
-%figure
-%analyzeNetwork(lgraph);
+figure
+analyzeNetwork(lgraph);
 
-net = trainNetwork(inputCell, inputCell, lgraph, options);
-
-
-%footnote | architecture runs well with solely the encoder and decoder, however the fft has complex values which MATLAB's autodiff
-% backpropagation is incompatible with; the derivative was challenging to find without this.
+net = trainNetwork(sdsTrain, lgraph, options);
